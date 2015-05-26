@@ -35,7 +35,7 @@ describe('angucomplete-alt', function() {
       $scope.$digest();
       expect(element.find('#ex1_value').attr('placeholder')).toEqual('Search countries');
     });
-      
+
     it('should render maxlength string', function() {
       var element = angular.element('<div angucomplete-alt id="ex1" placeholder="Search countries" selected-object="selectedCountry" local-data="countries" search-fields="name" title-field="name" maxlength="25" />');
       $scope.selectedCountry = null;
@@ -285,6 +285,24 @@ describe('angucomplete-alt', function() {
       $timeout.flush();
 
       expect(element.isolateScope().results[0].description).toBe(description);
+    });
+
+    it('should set scope.results[0].description to parsed string', function() {
+      var element = angular.element('<div angucomplete-alt id="ex1" placeholder="Search names" selected-object="selected" local-data="names" search-fields="name" title-field="name" description-expression="This is my {{desc}} description" minlength="1"/>');
+      var description = 'blah blah blah';
+      $scope.names = [ {name: 'John', desc: description} ];
+      $compile(element)($scope);
+      $scope.$digest();
+
+      var inputField = element.find('#ex1_value');
+      var eKeyup = $.Event('keyup');
+      eKeyup.which = 'j'.charCodeAt(0);
+      inputField.val('j');
+      inputField.trigger('input');
+      inputField.trigger(eKeyup);
+      $timeout.flush();
+
+      expect(element.isolateScope().results[0].description).toBe('This is my blah blah blah description');
     });
 
     it('should set scope.results[0].description to dotted attribute', function() {

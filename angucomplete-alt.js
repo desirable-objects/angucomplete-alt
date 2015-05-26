@@ -23,7 +23,7 @@
 }(window, function (angular) {
 
   angular.module('angucomplete-alt', [] )
-    .directive('angucompleteAlt', ['$q', '$parse', '$http', '$sce', '$timeout', '$templateCache', function ($q, $parse, $http, $sce, $timeout, $templateCache) {
+    .directive('angucompleteAlt', ['$q', '$parse', '$http', '$sce', '$timeout', '$templateCache', '$interpolate', function ($q, $parse, $http, $sce, $timeout, $templateCache, $interpolate) {
     // keyboard events
     var KEY_DW  = 40;
     var KEY_RT  = 39;
@@ -86,6 +86,7 @@
         remoteUrlDataField: '@',
         titleField: '@',
         descriptionField: '@',
+        descriptionExpression: '@',
         imageField: '@',
         inputClass: '@',
         pause: '@',
@@ -520,7 +521,11 @@
               }
 
               description = '';
-              if (scope.descriptionField) {
+
+              if (scope.descriptionExpression) {
+                console.log(scope.descriptionExpression);
+                description = formattedDesc = $interpolate(scope.descriptionExpression)(responseData[i]);
+              } else if (scope.descriptionField) {
                 description = formattedDesc = extractValue(responseData[i], scope.descriptionField);
               }
 
@@ -679,7 +684,7 @@
         // set strings for "Searching..." and "No results"
         scope.textSearching = attrs.textSearching ? attrs.textSearching : TEXT_SEARCHING;
         scope.textNoResults = attrs.textNoResults ? attrs.textNoResults : TEXT_NORESULTS;
-        
+
         // set max length (default to maxlength deault from html
         scope.maxlength = attrs.maxlength ? attrs.maxlength : MAX_LENGTH;
 
