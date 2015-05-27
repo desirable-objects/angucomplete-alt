@@ -288,9 +288,14 @@ describe('angucomplete-alt', function() {
     });
 
     it('should set scope.results[0].description to parsed string', function() {
-      var element = angular.element('<div angucomplete-alt id="ex1" placeholder="Search names" selected-object="selected" local-data="names" search-fields="name" title-field="name" description-expression="This is my {{desc}} description" minlength="1"/>');
+      var element = angular.element('<div angucomplete-alt id="ex1" placeholder="Search names" selected-object="selected" local-data="names" search-fields="name" title-field="name" description-expression="formatExpression" minlength="1"/>');
       var description = 'blah blah blah';
       $scope.names = [ {name: 'John', desc: description} ];
+
+      $scope.formatExpression = function(item) {
+        return 'This is my '+item.desc+' description';
+      };
+
       $compile(element)($scope);
       $scope.$digest();
 
@@ -303,6 +308,29 @@ describe('angucomplete-alt', function() {
       $timeout.flush();
 
       expect(element.isolateScope().results[0].description).toBe('This is my blah blah blah description');
+    });
+
+    it('should should not allow two description functions', function() {
+      var element = angular.element('<div angucomplete-alt id="ex1" placeholder="Search names" selected-object="selected" local-data="names" search-fields="name" title-field="name" description-field="desc" description-expression="formatExpression" minlength="1"/>');
+      var description = 'blah blah blah';
+      $scope.names = [ {name: 'John', desc: description} ];
+
+      $scope.formatExpression = function(item) {
+        return 'Does not get here';
+      };
+
+      expect($compile(element)($scope).toThrow(new Error('Don\'t include both a descriptionFunction as well as a descriptionField.'));
+      $scope.$digest();
+
+      var inputField = element.find('#ex1_value');
+      var eKeyup = $.Event('keyup');
+      eKeyup.which = 'j'.charCodeAt(0);
+      inputField.val('j');
+      inputField.trigger('input');
+      inputField.trigger(eKeyup);
+      $timeout.flush();
+
+      expect(element.isolateScope().results[0].description).toThrow(new Error('Don\'t include both a descriptionFunction as well as a descriptionField.'));
     });
 
     it('should set scope.results[0].description to dotted attribute', function() {

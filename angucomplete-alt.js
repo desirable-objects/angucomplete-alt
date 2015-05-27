@@ -86,7 +86,7 @@
         remoteUrlDataField: '@',
         titleField: '@',
         descriptionField: '@',
-        descriptionExpression: '@',
+        descriptionExpression: '=',
         imageField: '@',
         inputClass: '@',
         pause: '@',
@@ -522,9 +522,12 @@
 
               description = '';
 
+              if (scope.descriptionExpression && scope.descriptionField) {
+                throw new Error('Don\'t include both a descriptionFunction as well as a descriptionField.');
+              }
+
               if (scope.descriptionExpression) {
-                console.log(scope.descriptionExpression);
-                description = formattedDesc = $interpolate(scope.descriptionExpression)(responseData[i]);
+                description = formattedDesc = scope.descriptionExpression(responseData[i]);
               } else if (scope.descriptionField) {
                 description = formattedDesc = extractValue(responseData[i], scope.descriptionField);
               }
