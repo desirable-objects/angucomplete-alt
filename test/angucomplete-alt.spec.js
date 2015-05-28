@@ -18,6 +18,18 @@ describe('angucomplete-alt', function() {
     $timeout = _$timeout_;
   }));
 
+  function triggerInput(elem) {
+    $compile(elem)($scope);
+    $scope.$digest();
+
+    var inputField = elem.find('#ex1_value');
+    var eKeyup = $.Event('keyup');
+    eKeyup.which = 'j'.charCodeAt(0);
+    inputField.val('j');
+    inputField.trigger('input');
+    inputField.trigger(eKeyup);
+  }
+
   describe('Render', function() {
 
     it('should render input element with given id plus _value', function() {
@@ -207,15 +219,8 @@ describe('angucomplete-alt', function() {
         {name: 'Tim'},
         {name: 'Wanda'}
       ];
-      $compile(element)($scope);
-      $scope.$digest();
 
-      var inputField = element.find('#ex1_value');
-      var eKeyup = $.Event('keyup');
-      eKeyup.which = 'j'.charCodeAt(0);
-      inputField.val('j');
-      inputField.trigger('input');
-      inputField.trigger(eKeyup);
+      triggerInput(element);
       $timeout.flush();
 
       expect(element.isolateScope().results[0].title).toBe('John');
@@ -229,15 +234,8 @@ describe('angucomplete-alt', function() {
         {firstName: 'Tim',   lastName: 'Doe'},
         {firstName: 'Wanda', lastName: 'Doe'}
       ];
-      $compile(element)($scope);
-      $scope.$digest();
 
-      var inputField = element.find('#ex1_value');
-      var eKeyup = $.Event('keyup');
-      eKeyup.which = 'j'.charCodeAt(0);
-      inputField.val('j');
-      inputField.trigger('input');
-      inputField.trigger(eKeyup);
+      triggerInput(element);
       $timeout.flush();
 
       expect(element.isolateScope().results[0].title).toBe(firstName + ' ' + lastName);
@@ -255,82 +253,86 @@ describe('angucomplete-alt', function() {
           }
         }
       ];
-      $compile(element)($scope);
-      $scope.$digest();
 
-      var inputField = element.find('#ex1_value');
-      var eKeyup = $.Event('keyup');
-      eKeyup.which = 'j'.charCodeAt(0);
-      inputField.val('j');
-      inputField.trigger('input');
-      inputField.trigger(eKeyup);
+      triggerInput(element);
       $timeout.flush();
 
       expect(element.isolateScope().results[0].title).toBe(first + ' ' + last);
+    });
+
+    it('should set scope.results[0].title to parsed value', function() {
+      var element = angular.element('<div angucomplete-alt id="ex1" placeholder="Search names" selected-object="selected" local-data="names" search-fields="firstName" title-function="titleFunc" minlength="1"/>');
+      var lastName = 'Doe', firstName = 'John';
+      $scope.names = [
+        {firstName: 'John',  lastName: 'Doe'},
+        {firstName: 'Tim',   lastName: 'Doe'},
+        {firstName: 'Wanda', lastName: 'Doe'}
+      ];
+
+      $scope.titleFunc = function(item) {
+        return 'Say hello to ' + item.firstName + ' ' + item.lastName;
+      };
+
+      triggerInput(element);
+      $timeout.flush();
+
+      expect(element.isolateScope().results[0].title).toBe('Say hello to ' + firstName + ' ' + lastName);
+    });
+
+    it('should should not allow two title attributes', function() {
+      var element = angular.element('<div angucomplete-alt id="ex1" placeholder="Search names" selected-object="selected" local-data="names" search-fields="name" title-field="name" title-function="titleFunc" minlength="1"/>');
+      var description = 'blah blah blah';
+      $scope.names = [ {name: 'John', desc: description} ];
+
+      $scope.titleFunc = function(item) {
+        throw new Error('Title function was called!');
+      };
+
+      triggerInput(element);
+
+      expect(function() { $timeout.flush(); }).toThrow(new Error('Don\'t include both a title-function as well as a title-field.'));
+
     });
 
     it('should set scope.results[0].description', function() {
       var element = angular.element('<div angucomplete-alt id="ex1" placeholder="Search names" selected-object="selected" local-data="names" search-fields="name" title-field="name" description-field="desc" minlength="1"/>');
       var description = 'blah blah blah';
       $scope.names = [ {name: 'John', desc: description} ];
-      $compile(element)($scope);
-      $scope.$digest();
 
-      var inputField = element.find('#ex1_value');
-      var eKeyup = $.Event('keyup');
-      eKeyup.which = 'j'.charCodeAt(0);
-      inputField.val('j');
-      inputField.trigger('input');
-      inputField.trigger(eKeyup);
+      triggerInput(element);
       $timeout.flush();
 
       expect(element.isolateScope().results[0].description).toBe(description);
     });
 
     it('should set scope.results[0].description to parsed string', function() {
-      var element = angular.element('<div angucomplete-alt id="ex1" placeholder="Search names" selected-object="selected" local-data="names" search-fields="name" title-field="name" description-expression="formatExpression" minlength="1"/>');
+      var element = angular.element('<div angucomplete-alt id="ex1" placeholder="Search names" selected-object="selected" local-data="names" search-fields="name" title-field="name" description-function="descriptionFunc" minlength="1"/>');
       var description = 'blah blah blah';
       $scope.names = [ {name: 'John', desc: description} ];
 
-      $scope.formatExpression = function(item) {
+      $scope.descriptionFunc = function(item) {
         return 'This is my '+item.desc+' description';
       };
 
-      $compile(element)($scope);
-      $scope.$digest();
-
-      var inputField = element.find('#ex1_value');
-      var eKeyup = $.Event('keyup');
-      eKeyup.which = 'j'.charCodeAt(0);
-      inputField.val('j');
-      inputField.trigger('input');
-      inputField.trigger(eKeyup);
+      triggerInput(element);
       $timeout.flush();
 
       expect(element.isolateScope().results[0].description).toBe('This is my blah blah blah description');
     });
 
-    it('should should not allow two description functions', function() {
-      var element = angular.element('<div angucomplete-alt id="ex1" placeholder="Search names" selected-object="selected" local-data="names" search-fields="name" title-field="name" description-field="desc" description-expression="formatExpression" minlength="1"/>');
+    it('should should not allow two description attributes', function() {
+      var element = angular.element('<div angucomplete-alt id="ex1" placeholder="Search names" selected-object="selected" local-data="names" search-fields="name" title-field="name" description-field="desc" description-function="descriptionFunc" minlength="1"/>');
       var description = 'blah blah blah';
       $scope.names = [ {name: 'John', desc: description} ];
 
-      $scope.formatExpression = function(item) {
-        return 'Does not get here';
+      $scope.descriptionFunc = function(item) {
+        throw new Error('Description function was called!');
       };
 
-      expect($compile(element)($scope).toThrow(new Error('Don\'t include both a descriptionFunction as well as a descriptionField.'));
-      $scope.$digest();
+      triggerInput(element);
 
-      var inputField = element.find('#ex1_value');
-      var eKeyup = $.Event('keyup');
-      eKeyup.which = 'j'.charCodeAt(0);
-      inputField.val('j');
-      inputField.trigger('input');
-      inputField.trigger(eKeyup);
-      $timeout.flush();
+      expect(function() { $timeout.flush(); }).toThrow(new Error('Don\'t include both a description-function as well as a description-field.'));
 
-      expect(element.isolateScope().results[0].description).toThrow(new Error('Don\'t include both a descriptionFunction as well as a descriptionField.'));
     });
 
     it('should set scope.results[0].description to dotted attribute', function() {
@@ -345,15 +347,8 @@ describe('angucomplete-alt', function() {
           }
         }
       ];
-      $compile(element)($scope);
-      $scope.$digest();
 
-      var inputField = element.find('#ex1_value');
-      var eKeyup = $.Event('keyup');
-      eKeyup.which = 'j'.charCodeAt(0);
-      inputField.val('j');
-      inputField.trigger('input');
-      inputField.trigger(eKeyup);
+      triggerInput(element);
       $timeout.flush();
 
       expect(element.isolateScope().results[0].description).toBe(desc);
@@ -363,15 +358,8 @@ describe('angucomplete-alt', function() {
       var element = angular.element('<div angucomplete-alt id="ex1" placeholder="Search names" selected-object="selected" local-data="names" search-fields="name" title-field="name" image-field="pic" minlength="1"/>');
       var image = 'some pic';
       $scope.names = [ {name: 'John', pic: image} ];
-      $compile(element)($scope);
-      $scope.$digest();
 
-      var inputField = element.find('#ex1_value');
-      var eKeyup = $.Event('keyup');
-      eKeyup.which = 'j'.charCodeAt(0);
-      inputField.val('j');
-      inputField.trigger('input');
-      inputField.trigger(eKeyup);
+      triggerInput(element);
       $timeout.flush();
 
       expect(element.isolateScope().results[0].image).toBe(image);
@@ -390,15 +378,9 @@ describe('angucomplete-alt', function() {
           }
         }
       ];
-      $compile(element)($scope);
-      $scope.$digest();
 
-      var inputField = element.find('#ex1_value');
-      var eKeyup = $.Event('keyup');
-      eKeyup.which = 'j'.charCodeAt(0);
-      inputField.val('j');
-      inputField.trigger('input');
-      inputField.trigger(eKeyup);
+      triggerInput(element);
+
       $timeout.flush();
 
       expect(element.isolateScope().results[0].image).toBe(image);
@@ -414,15 +396,9 @@ describe('angucomplete-alt', function() {
         {name: 'Aland Islands', code: 'AX'},
         {name: 'Albania', code: 'AL'}
       ];
-      $compile(element)($scope);
-      $scope.$digest();
 
-      var inputField = element.find('#ex1_value');
-      var eKeyup = $.Event('keyup');
-      eKeyup.which = 'a'.charCodeAt(0);
-      inputField.val('a');
-      inputField.trigger('input');
-      inputField.trigger(eKeyup);
+      triggerInput(element);
+
       expect(element.isolateScope().searching).toBe(true);
 
       $timeout.flush();

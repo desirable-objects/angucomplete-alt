@@ -85,8 +85,9 @@
         remoteUrl: '@',
         remoteUrlDataField: '@',
         titleField: '@',
+        titleFunction: '=',
         descriptionField: '@',
-        descriptionExpression: '=',
+        descriptionFunction: '=',
         imageField: '@',
         inputClass: '@',
         pause: '@',
@@ -516,18 +517,25 @@
             scope.results = [];
 
             for (i = 0; i < responseData.length; i++) {
-              if (scope.titleField && scope.titleField !== '') {
+
+              if (scope.titleFunction && scope.titleField) {
+                throw new Error('Don\'t include both a title-function as well as a title-field.');
+              }
+
+              if (scope.titleFunction) {
+                text = formattedText = scope.titleFunction(responseData[i]);
+              } else if (scope.titleField && scope.titleField !== '') {
                 text = formattedText = extractTitle(responseData[i]);
               }
 
               description = '';
 
-              if (scope.descriptionExpression && scope.descriptionField) {
-                throw new Error('Don\'t include both a descriptionFunction as well as a descriptionField.');
+              if (scope.descriptionFunction && scope.descriptionField) {
+                throw new Error('Don\'t include both a description-function as well as a description-field.');
               }
 
-              if (scope.descriptionExpression) {
-                description = formattedDesc = scope.descriptionExpression(responseData[i]);
+              if (scope.descriptionFunction) {
+                description = formattedDesc = scope.descriptionFunction(responseData[i]);
               } else if (scope.descriptionField) {
                 description = formattedDesc = extractValue(responseData[i], scope.descriptionField);
               }
