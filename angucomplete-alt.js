@@ -79,6 +79,7 @@
         remoteUrlRequestWithCredentials: '@',
         remoteUrlResponseFormatter: '=',
         remoteUrlErrorCallback: '=',
+        remoteApiHandler: '=',
         id: '@',
         type: '@',
         placeholder: '@',
@@ -406,6 +407,10 @@
 
         function httpSuccessCallbackGen(str) {
           return function(responseData, status, headers, config) {
+            // normalize return obejct from promise
+            if (!status && !headers && !config) {
+              responseData = responseData.data;
+            }
             scope.searching = false;
             processResults(
               extractValue(responseFormatter(responseData), scope.remoteUrlDataField),
@@ -414,6 +419,10 @@
         }
 
         function httpErrorCallback(errorRes, status, headers, config) {
+          // normalize return obejct from promise
+          if (!status && !headers && !config) {
+            status = errorRes.status;
+          }
           if (status !== 0) {
             if (scope.remoteUrlErrorCallback) {
               scope.remoteUrlErrorCallback(errorRes, status, headers, config);
@@ -448,6 +457,16 @@
           $http.get(url, params)
             .success(httpSuccessCallbackGen(str))
             .error(httpErrorCallback);
+        }
+
+        function getRemoteResultsWithCustomHandler(str) {
+          cancelHttpRequest();
+
+          httpCanceller = $q.defer();
+
+          scope.remoteApiHandler(str, httpCanceller.promise)
+            .then(httpSuccessCallbackGen(str))
+            .catch(httpErrorCallback);
         }
 
         function clearResults() {
@@ -505,7 +524,9 @@
               getLocalResults(str);
             });
           }
-          else {
+          else if (scope.remoteApiHandler) {
+            getRemoteResultsWithCustomHandler(str);
+          } else {
             getRemoteResults(str);
           }
         }
@@ -571,6 +592,9 @@
         function showAll() {
           if (scope.localData) {
             processResults(scope.localData, '');
+          }
+          else if (scope.remoteApiHandler) {
+            getRemoteResultsWithCustomHandler('');
           }
           else {
             getRemoteResults('');

@@ -38,6 +38,7 @@ To see a demo go here: http://ghiden.github.io/angucomplete-alt
 * Clear input by sending $broadcast from parent scope. Thanks to @Leocrest for #61.
 * Override template with your own. When you use this feature, test throughly as it might break other features. Thanks to @sdbondi for #74.
 * Show all items.
+* Custom remote API handler which allows you to fully control how to communicate with your remote API. Thanks to @jbuquet
 
 ### Getting Started
 Download the package, and include the dist/angucomplete-alt.min.js file in your page.
@@ -112,6 +113,7 @@ var app = angular.module('app', ["angucomplete-alt"]);
 | remote-url-request-with-credentials | A boolean that accepts parameters with credentials. | No | true or false |
 | remote-url-response-formatter | A function on the scope that will modify raw response from remote API before it is rendered in the drop-down.  Useful for adding data that may not be available from the API.  The specified function must return the object in the format that angucomplete understands. | No | addImageUrlToObject |
 | remote-url-error-callback | A callback funciton to handle error response from $http.get | No | httpErrorCallbackFn |
+| remote-api-handler | This gives a way to fully delegate handling of remote search API. This function takes user input string and timeout promise, and it needs to return a promise. For example, if your search API is based on POST, you can use this function to create your own http handler. See example below | No | - |
 | clear-selected | To clear out input field upon selecting an item, set this attribute to true. [example](http://ghiden.github.io/angucomplete-alt/#example3) | No | true |
 | override-suggestions | To override suggestions and set the value in input field to selectedObject. [example](http://ghiden.github.io/angucomplete-alt/#example4) | No | true |
 | field-required | Set field to be required. Requirement for this to work is that this directive needs to be in a form. Default class name is "autocomplete-required". [example](http://ghiden.github.io/angucomplete-alt/#example8) | No | true |
@@ -149,6 +151,23 @@ $scope.$broadcast('angucomplete-alt:clearInput');
 To clear an angucomplete-alt input field, send this message with id of the directive. For example, the id of the directive is 'autocomplete-1'.
 ```js
 $scope.$broadcast('angucomplete-alt:clearInput', 'autocomplete-1');
+```
+
+### Remote API Handler
+
+This is an example calling search API with POST.
+Pass this searchAPI function to the directive as remote-api-hander.
+
+```js
+$scope.searchAPI = function(userInputString, timeoutPromise) {
+  return $http.post('/yourownapi/', {q: userInputString}, {timeout: timeoutPromise});
+}
+```
+When you use remote-api-handler, these attributes are ignored:
+```
+remote-url
+remote-url-request-formatter
+remote-url-request-with-credentials
 ```
 
 ### Contributors
