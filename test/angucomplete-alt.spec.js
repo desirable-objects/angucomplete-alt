@@ -18,6 +18,18 @@ describe('angucomplete-alt', function() {
     $timeout = _$timeout_;
   }));
 
+  function triggerInput(elem) {
+    $compile(elem)($scope);
+    $scope.$digest();
+
+    var inputField = elem.find('#ex1_value');
+    var eKeyup = $.Event('keyup');
+    eKeyup.which = 'j'.charCodeAt(0);
+    inputField.val('j');
+    inputField.trigger('input');
+    inputField.trigger(eKeyup);
+  }
+
   describe('Render', function() {
 
     it('should render input element with given id plus _value', function() {
@@ -215,15 +227,8 @@ describe('angucomplete-alt', function() {
         {name: 'Tim'},
         {name: 'Wanda'}
       ];
-      $compile(element)($scope);
-      $scope.$digest();
 
-      var inputField = element.find('#ex1_value');
-      var eKeyup = $.Event('keyup');
-      eKeyup.which = 'j'.charCodeAt(0);
-      inputField.val('j');
-      inputField.trigger('input');
-      inputField.trigger(eKeyup);
+      triggerInput(element);
       $timeout.flush();
 
       expect(element.isolateScope().results[0].title).toBe('John');
@@ -237,15 +242,8 @@ describe('angucomplete-alt', function() {
         {firstName: 'Tim',   lastName: 'Doe'},
         {firstName: 'Wanda', lastName: 'Doe'}
       ];
-      $compile(element)($scope);
-      $scope.$digest();
 
-      var inputField = element.find('#ex1_value');
-      var eKeyup = $.Event('keyup');
-      eKeyup.which = 'j'.charCodeAt(0);
-      inputField.val('j');
-      inputField.trigger('input');
-      inputField.trigger(eKeyup);
+      triggerInput(element);
       $timeout.flush();
 
       expect(element.isolateScope().results[0].title).toBe(firstName + ' ' + lastName);
@@ -263,15 +261,8 @@ describe('angucomplete-alt', function() {
           }
         }
       ];
-      $compile(element)($scope);
-      $scope.$digest();
 
-      var inputField = element.find('#ex1_value');
-      var eKeyup = $.Event('keyup');
-      eKeyup.which = 'j'.charCodeAt(0);
-      inputField.val('j');
-      inputField.trigger('input');
-      inputField.trigger(eKeyup);
+      triggerInput(element);
       $timeout.flush();
 
       expect(element.isolateScope().results[0].title).toBe(first + ' ' + last);
@@ -281,15 +272,8 @@ describe('angucomplete-alt', function() {
       var element = angular.element('<div angucomplete-alt id="ex1" placeholder="Search names" selected-object="selected" local-data="names" search-fields="name" title-field="name" description-field="desc" minlength="1"/>');
       var description = 'blah blah blah';
       $scope.names = [ {name: 'John', desc: description} ];
-      $compile(element)($scope);
-      $scope.$digest();
 
-      var inputField = element.find('#ex1_value');
-      var eKeyup = $.Event('keyup');
-      eKeyup.which = 'j'.charCodeAt(0);
-      inputField.val('j');
-      inputField.trigger('input');
-      inputField.trigger(eKeyup);
+      triggerInput(element);
       $timeout.flush();
 
       expect(element.isolateScope().results[0].description).toBe(description);
@@ -307,15 +291,8 @@ describe('angucomplete-alt', function() {
           }
         }
       ];
-      $compile(element)($scope);
-      $scope.$digest();
 
-      var inputField = element.find('#ex1_value');
-      var eKeyup = $.Event('keyup');
-      eKeyup.which = 'j'.charCodeAt(0);
-      inputField.val('j');
-      inputField.trigger('input');
-      inputField.trigger(eKeyup);
+      triggerInput(element);
       $timeout.flush();
 
       expect(element.isolateScope().results[0].description).toBe(desc);
@@ -325,15 +302,8 @@ describe('angucomplete-alt', function() {
       var element = angular.element('<div angucomplete-alt id="ex1" placeholder="Search names" selected-object="selected" local-data="names" search-fields="name" title-field="name" image-field="pic" minlength="1"/>');
       var image = 'some pic';
       $scope.names = [ {name: 'John', pic: image} ];
-      $compile(element)($scope);
-      $scope.$digest();
 
-      var inputField = element.find('#ex1_value');
-      var eKeyup = $.Event('keyup');
-      eKeyup.which = 'j'.charCodeAt(0);
-      inputField.val('j');
-      inputField.trigger('input');
-      inputField.trigger(eKeyup);
+      triggerInput(element);
       $timeout.flush();
 
       expect(element.isolateScope().results[0].image).toBe(image);
@@ -352,15 +322,9 @@ describe('angucomplete-alt', function() {
           }
         }
       ];
-      $compile(element)($scope);
-      $scope.$digest();
 
-      var inputField = element.find('#ex1_value');
-      var eKeyup = $.Event('keyup');
-      eKeyup.which = 'j'.charCodeAt(0);
-      inputField.val('j');
-      inputField.trigger('input');
-      inputField.trigger(eKeyup);
+      triggerInput(element);
+
       $timeout.flush();
 
       expect(element.isolateScope().results[0].image).toBe(image);
@@ -376,15 +340,9 @@ describe('angucomplete-alt', function() {
         {name: 'Aland Islands', code: 'AX'},
         {name: 'Albania', code: 'AL'}
       ];
-      $compile(element)($scope);
-      $scope.$digest();
 
-      var inputField = element.find('#ex1_value');
-      var eKeyup = $.Event('keyup');
-      eKeyup.which = 'a'.charCodeAt(0);
-      inputField.val('a');
-      inputField.trigger('input');
-      inputField.trigger(eKeyup);
+      triggerInput(element);
+
       expect(element.isolateScope().searching).toBe(true);
 
       $timeout.flush();
